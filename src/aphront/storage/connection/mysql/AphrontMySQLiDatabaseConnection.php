@@ -9,7 +9,15 @@ final class AphrontMySQLiDatabaseConnection
   extends AphrontMySQLDatabaseConnectionBase {
 
   public function escapeUTF8String($string) {
-    $this->validateUTF8String($string);
+	try
+	{
+    		$this->validateUTF8String($string);
+	}
+	catch(AphrontQueryCharacterSetException $e)
+	{
+		$string=iconv("GBK","UTF-8",$string);
+		$this->validateUTF8String($string);
+	}
     return $this->escapeBinaryString($string);
   }
 
