@@ -40,8 +40,8 @@ final class AphrontMySQLiDatabaseConnection
   protected function connect() {
     if (!class_exists('mysqli', false)) {
       throw new Exception(
-        "About to call new mysqli(), but the PHP MySQLi extension is not ".
-        "available!");
+        'About to call new mysqli(), but the PHP MySQLi extension is not '.
+        'available!');
     }
 
     $user = $this->getConfiguration('user');
@@ -111,7 +111,7 @@ final class AphrontMySQLiDatabaseConnection
     }
 
     if ($conn->more_results()) {
-      throw new Exception("There are some results left in the result set.");
+      throw new Exception('There are some results left in the result set.');
     }
 
     return $results;

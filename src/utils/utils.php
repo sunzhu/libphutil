@@ -577,7 +577,7 @@ function assert_stringlike($parameter) {
   }
 
   throw new InvalidArgumentException(
-    "Argument must be scalar or object which implements __toString()!");
+    'Argument must be scalar or object which implements __toString()!');
 }
 
 /**
@@ -732,6 +732,17 @@ function array_mergev(array $arrayv) {
     return array();
   }
 
+  foreach ($arrayv as $key => $item) {
+    if (!is_array($item)) {
+      throw new InvalidArgumentException(
+        pht(
+          'Expected all items passed to array_mergev() to be arrays, but '.
+          'argument with key "%s" has type "%s".',
+          $key,
+          gettype($item)));
+    }
+  }
+
   return call_user_func_array('array_merge', $arrayv);
 }
 
@@ -854,7 +865,7 @@ function phutil_is_hiphop_runtime() {
 function phutil_exit($status = 0) {
   $event = new PhutilEvent(
     PhutilEventType::TYPE_WILLEXITABRUPTLY,
-    array("status" => $status));
+    array('status' => $status));
   PhutilEventEngine::dispatchEvent($event);
 
   exit($status);
@@ -875,7 +886,7 @@ function phutil_loggable_string($string) {
   $result = '';
 
   static $c_map = array(
-    "\\" => '\\\\',
+    '\\' => '\\\\',
     "\n" => '\\n',
     "\r" => '\\r',
     "\t" => '\\t',
