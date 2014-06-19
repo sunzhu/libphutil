@@ -19,7 +19,7 @@
  *       'email' => 'joe@bloggs.com',
  *     ))
  *
- *     ->setDrawBorders(true)
+ *     ->setBorders(true)
  *     ->draw();
  */
 final class PhutilConsoleTable extends Phobject {
@@ -29,6 +29,7 @@ final class PhutilConsoleTable extends Phobject {
   private $widths  = array();
   private $borders = false;
   private $padding = 1;
+  private $showHeader = true;
   private $console;
 
   const ALIGN_LEFT    = 'left';
@@ -60,6 +61,12 @@ final class PhutilConsoleTable extends Phobject {
 
   public function setPadding($padding) {
     $this->padding = $padding;
+    return $this;
+  }
+
+  public function setShowHeader($show_header) {
+    $this->showHeader = $show_header;
+    return $this;
   }
 
 
@@ -111,13 +118,17 @@ final class PhutilConsoleTable extends Phobject {
       $output .= $this->formatSeparator('=');
     }
 
+    if (!$this->showHeader) {
+      return $output;
+    }
+
     $columns = array();
     foreach ($this->columns as $key => $column) {
       $columns[] = PhutilConsoleFormatter::formatString(
         '**%s**',
         $this->alignString(
           $column['title'],
-          $this->widths[$key],
+          $this->getWidth($key),
           idx($column, 'align', self::ALIGN_LEFT)));
     }
 
@@ -139,7 +150,7 @@ final class PhutilConsoleTable extends Phobject {
       foreach ($this->columns as $key => $column) {
         $columns[] = $this->alignString(
           (string)idx($data, $key, ''),
-          $this->widths[$key],
+          $this->getWidth($key),
           idx($column, 'align', self::ALIGN_LEFT));
       }
 
@@ -184,11 +195,17 @@ final class PhutilConsoleTable extends Phobject {
    * @return int
    */
   protected function getWidth($key) {
-    return idx($this->widths, $key) + 2 * $this->padding;
+    $width = max(
+      idx($this->widths, $key),
+      phutil_utf8_console_strlen(
+        idx(idx($this->columns, $key, array()), 'title', '')));
+
+    return $width + 2 * $this->padding;
   }
 
   protected function alignString($string, $width, $align) {
-    $num_padding = $width - phutil_utf8_console_strlen($string);
+    $num_padding = $width -
+      (2 * $this->padding) - phutil_utf8_console_strlen($string);
 
     switch ($align) {
       case self::ALIGN_LEFT:
