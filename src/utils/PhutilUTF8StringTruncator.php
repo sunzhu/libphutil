@@ -28,8 +28,6 @@
  *
  * NOTE: This function makes a best effort to apply some reasonable rules but
  * will not work well for the full range of unicode languages.
- *
- * @group utf8
  */
 final class PhutilUTF8StringTruncator extends Phobject {
 
@@ -189,7 +187,7 @@ final class PhutilUTF8StringTruncator extends Phobject {
 
     // NOTE: This is not complete, and there are many other word boundary
     // characters and reasonable places to break words in the UTF-8 character
-    // space. For now, this gives us reasonable behavior for latin langauges. We
+    // space. For now, this gives us reasonable behavior for latin languages. We
     // don't necessarily have access to PCRE+Unicode so there isn't a great way
     // for us to look up character attributes.
 

@@ -14,7 +14,6 @@
  * @task path        Paths
  * @task exec        Executables
  * @task assert      Assertions
- * @group filesystem
  */
 final class Filesystem {
 
@@ -97,22 +96,20 @@ final class Filesystem {
   }
 
   /**
-   * Write a file in a manner similar to file_put_contents(), but only
-   * touch the file if the contents are different, and throw detailed
-   * exceptions on failure.
+   * Write a file in a manner similar to `file_put_contents()`, but only touch
+   * the file if the contents are different, and throw detailed exceptions on
+   * failure.
    *
-   * As this function is used in build steps to update code, if we write
-   * a new file, we do so by writing to a temporary file and moving it
-   * into place.  This allows a concurrently reading process to see
-   * a consistent view of the file without needing locking; any given
-   * read of the file is guaranteed to be self-consistent and not see
-   * partial file contents.
+   * As this function is used in build steps to update code, if we write a new
+   * file, we do so by writing to a temporary file and moving it into place.
+   * This allows a concurrently reading process to see a consistent view of the
+   * file without needing locking; any given read of the file is guaranteed to
+   * be self-consistent and not see partial file contents.
    *
    * @param string file path to write
    * @param string data to write
    *
-   * @return boolean indicating whether the file was changed by this
-   * function
+   * @return boolean indicating whether the file was changed by this function.
    */
   public static function writeFileIfChanged($path, $data) {
     if (file_exists($path)) {
@@ -622,7 +619,7 @@ final class Filesystem {
         "Failed to create directory `{$path}'.");
     }
 
-    // Need to change premissions explicitly because mkdir does something
+    // Need to change permissions explicitly because mkdir does something
     // slightly different. mkdir(2) man page:
     // 'The parameter mode specifies the permissions to use. It is modified by
     // the process's umask in the usual way: the permissions of the created
