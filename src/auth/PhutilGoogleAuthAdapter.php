@@ -3,7 +3,7 @@
 /**
  * Authentication adapter for Google OAuth2.
  */
-final class PhutilAuthAdapterOAuthGoogle extends PhutilAuthAdapterOAuth {
+final class PhutilGoogleAuthAdapter extends PhutilOAuthAuthAdapter {
 
   public function getAdapterType() {
     return 'google';
@@ -116,7 +116,7 @@ final class PhutilAuthAdapterOAuthGoogle extends PhutilAuthAdapterOAuth {
   }
 
   private function tryToThrowSpecializedError($status, $raw_body) {
-    if (!($status instanceof HTTPFutureResponseStatusHTTP)) {
+    if (!($status instanceof HTTPFutureHTTPResponseStatus)) {
       return;
     }
 
