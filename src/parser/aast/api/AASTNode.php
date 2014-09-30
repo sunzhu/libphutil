@@ -58,6 +58,18 @@ abstract class AASTNode {
     return $this->children;
   }
 
+  public function getChildrenOfType($type) {
+    $nodes = array();
+
+    foreach ($this->children as $child) {
+      if ($child->getTypeName() == $type) {
+        $nodes[] = $child;
+      }
+    }
+
+    return $nodes;
+  }
+
   public function getChildOfType($index, $type) {
     $child = $this->getChildByIndex($index);
     if ($child->getTypeName() != $type) {
@@ -243,6 +255,15 @@ abstract class AASTNode {
     return $stream[$this->l]->getOffset();
   }
 
+  public function getLength() {
+    $stream = $this->tree->getRawTokenStream();
+    if (empty($stream[$this->r])) {
+      return null;
+    }
+    return $stream[$this->r]->getOffset() - $this->getOffset();
+  }
+
+
   public function getSurroundingNonsemanticTokens() {
     $before = array();
     $after  = array();
@@ -262,6 +283,12 @@ abstract class AASTNode {
 
   public function getLineNumber() {
     return idx($this->tree->getOffsetToLineNumberMap(), $this->getOffset());
+  }
+
+  public function getEndLineNumber() {
+    return idx(
+      $this->tree->getOffsetToLineNumberMap(),
+      $this->getOffset() + $this->getLength());
   }
 
   public function dispose() {
