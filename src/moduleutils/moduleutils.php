@@ -1,13 +1,16 @@
 <?php
 
-function phutil_get_library_root($library) {
+function phutil_get_library_root($library = null) {
+  if (!$library) {
+    $library = phutil_get_current_library_name();
+  }
   $bootloader = PhutilBootloader::getInstance();
   return $bootloader->getLibraryRoot($library);
 }
 
 function phutil_get_library_root_for_path($path) {
   foreach (Filesystem::walkToRoot($path) as $dir) {
-    if (@file_exists($dir.'/__phutil_library_init__.php')) {
+    if (Filesystem::pathExists($dir.'/__phutil_library_init__.php')) {
       return $dir;
     }
   }

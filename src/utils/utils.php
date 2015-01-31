@@ -1058,6 +1058,69 @@ function phutil_json_decode($string) {
 
 
 /**
+ * Decode an INI string.
+ *
+ * @param  string
+ * @return mixed
+ */
+function phutil_ini_decode($string) {
+  $results = null;
+  $trap = new PhutilErrorTrap();
+
+  try {
+    if (!function_exists('parse_ini_string')) {
+      throw new PhutilMethodNotImplementedException(
+        pht(
+          '%s is not compatible with your version of PHP (%s). This function '.
+          'is only supported on PHP versions newer than 5.3.0.',
+          __FUNCTION__,
+          phpversion()));
+    }
+
+    $results = @parse_ini_string($string, true, INI_SCANNER_RAW);
+
+    if ($results === false) {
+      throw new PhutilINIParserException(trim($trap->getErrorsAsString()));
+    }
+
+    foreach ($results as $section => $result) {
+      if (!is_array($result)) {
+        // We JSON decode the value in ordering to perform the following
+        // conversions:
+        //
+        //   - `'true'` => `true`
+        //   - `'false'` => `false`
+        //   - `'123'` => `123`
+        //   - `'1.234'` => `1.234`
+        //
+        $result = json_decode($result, true);
+
+        if ($result !== null && !is_array($result)) {
+          $results[$section] = $result;
+        }
+
+        continue;
+      }
+
+      foreach ($result as $key => $value) {
+        $value = json_decode($value, true);
+
+        if ($value !== null && !is_array($value)) {
+          $results[$section][$key] = $value;
+        }
+      }
+    }
+  } catch (Exception $ex) {
+    $trap->destroy();
+    throw $ex;
+  }
+
+  $trap->destroy();
+  return $results;
+}
+
+
+/**
  * Attempt to censor any plaintext credentials from a string.
  *
  * The major use case here is to censor usernames and passwords from command
@@ -1120,4 +1183,73 @@ function phutil_var_export($var) {
 
   // Let PHP handle everything else.
   return var_export($var, true);
+}
+
+
+/**
+ * An improved version of `fnmatch`.
+ *
+ * @param  string  A glob pattern.
+ * @param  string  A path.
+ * @return bool
+ */
+function phutil_fnmatch($glob, $path) {
+  // Modify the glob to allow `**/` to match files in the root directory.
+  $glob = preg_replace('@(?:(?<!\\\\)\\*){2}/@', '{,*/,**/}', $glob);
+
+  $escaping = false;
+  $in_curlies = 0;
+  $regex = '';
+
+  for ($i = 0; $i < strlen($glob); $i++) {
+    $char = $glob[$i];
+    $next_char = ($i < strlen($glob) - 1) ? $glob[$i + 1] : null;
+
+    $escape = array('$', '(', ')', '+', '.', '^', '|');
+    $mapping = array();
+
+    if ($escaping) {
+      $escape[] = '*';
+      $escape[] = '?';
+      $escape[] = '{';
+    } else {
+      $mapping['*'] = $next_char === '*' ? '.*' : '[^/]*';
+      $mapping['?'] = '[^/]';
+      $mapping['{'] = '(';
+
+      if ($in_curlies) {
+        $mapping[','] = '|';
+        $mapping['}'] = ')';
+      }
+    }
+
+    if (in_array($char, $escape)) {
+      $regex .= "\\{$char}";
+    } else if ($replacement = idx($mapping, $char)) {
+      $regex .= $replacement;
+    } else if ($char === '\\') {
+      if ($escaping) {
+        $regex .= '\\\\';
+      }
+      $escaping = !$escaping;
+      continue;
+    } else {
+      $regex .= $char;
+    }
+
+    if ($char === '{' && !$escaping) {
+      $in_curlies++;
+    } else if ($char === '}' && $in_curlies && !$escaping) {
+      $in_curlies--;
+    }
+
+    $escaping = false;
+  }
+
+  if ($in_curlies || $escaping) {
+    throw new InvalidArgumentException(pht('Invalid glob pattern.'));
+  }
+
+  $regex = '(\A'.$regex.'\z)';
+  return (bool)preg_match($regex, $path);
 }
