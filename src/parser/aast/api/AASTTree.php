@@ -43,70 +43,79 @@ abstract class AASTTree {
     $this->buildTree(array($tree));
   }
 
-  public function setTreeType($description) {
+  public final function setTreeType($description) {
     $this->treeType = $description;
     return $this;
   }
 
-  public function getTreeType() {
+  public final function getTreeType() {
     return $this->treeType;
   }
 
-  public function setTokenConstants(array $token_map) {
+  public final function setTokenConstants(array $token_map) {
     $this->tokenConstants = $token_map;
     $this->tokenReverseMap = array_flip($token_map);
     return $this;
   }
 
-  public function setNodeConstants(array $node_map) {
+  public final function setNodeConstants(array $node_map) {
     $this->nodeConstants = $node_map;
     $this->nodeReverseMap = array_flip($node_map);
     return $this;
   }
 
-  public function getNodeTypeNameFromTypeID($type_id) {
+  public final function getNodeTypeNameFromTypeID($type_id) {
     if (empty($this->nodeConstants[$type_id])) {
       $tree_type = $this->getTreeType();
       throw new Exception(
-        "No type name for node type ID '{$type_id}' in '{$tree_type}' AAST.");
+        pht(
+          "No type name for node type ID '%s' in '%s' AAST.",
+          $type_id,
+          $tree_type));
     }
 
     return $this->nodeConstants[$type_id];
   }
 
-  public function getNodeTypeIDFromTypeName($type_name) {
+  public final function getNodeTypeIDFromTypeName($type_name) {
     if (empty($this->nodeReverseMap[$type_name])) {
       $tree_type = $this->getTreeType();
       throw new Exception(
-        "No type ID for node type name '{$type_name}' in '{$tree_type}' AAST.");
+        pht(
+          "No type ID for node type name '%s' in '%s' AAST.",
+          $type_name,
+          $tree_type));
     }
     return $this->nodeReverseMap[$type_name];
   }
 
-
-  public function getTokenTypeNameFromTypeID($type_id) {
+  public final function getTokenTypeNameFromTypeID($type_id) {
     if (empty($this->tokenConstants[$type_id])) {
       $tree_type = $this->getTreeType();
       throw new Exception(
-        "No type name for token type ID '{$type_id}' ".
-        "in '{$tree_type}' AAST.");
+        pht(
+          "No type name for token type ID '%s' in '%s' AAST.",
+          $type_id,
+          $tree_type));
     }
     return $this->tokenConstants[$type_id];
   }
 
-  public function getTokenTypeIDFromTypeName($type_name) {
+  public final function getTokenTypeIDFromTypeName($type_name) {
     if (empty($this->tokenReverseMap[$type_name])) {
       $tree_type = $this->getTreeType();
       throw new Exception(
-        "No type ID for token type name '{$type_name}' ".
-        "in '{$tree_type}' AAST.");
+        pht(
+          "No type ID for token type name '%s' in '%s' AAST.",
+          $type_name,
+          $tree_type));
     }
     return $this->tokenReverseMap[$type_name];
   }
 
-
   /**
-   * Unlink internal datastructures so that PHP's will garbage collect the tree.
+   * Unlink internal datastructures so that PHP will garbage collect the tree.
+   *
    * This renders the object useless.
    *
    * @return void
@@ -117,7 +126,7 @@ abstract class AASTTree {
     unset($this->stream);
   }
 
-  public function getRootNode() {
+  public final function getRootNode() {
     return $this->tree[0];
   }
 
@@ -147,26 +156,9 @@ abstract class AASTTree {
     return $result;
   }
 
-  public function getRawTokenStream() {
+  public final function getRawTokenStream() {
     return $this->stream;
   }
-
-  public function renderAsText() {
-    return $this->executeRenderAsText(array($this->getRootNode()), 0);
-  }
-
-  protected function executeRenderAsText($list, $depth) {
-    $return = '';
-    foreach ($list as $node) {
-      if ($depth) {
-        $return .= str_repeat('  ', $depth);
-      }
-      $return .= $node->getDescription()."\n";
-      $return .= $this->executeRenderAsText($node->getChildren(), $depth + 1);
-    }
-    return $return;
-  }
-
 
   public function getOffsetToLineNumberMap() {
     if ($this->lineMap === null) {

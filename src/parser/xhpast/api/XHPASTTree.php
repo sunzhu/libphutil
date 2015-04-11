@@ -14,12 +14,7 @@ final class XHPASTTree extends AASTTree {
     return new XHPASTNode($id, $data, $tree);
   }
 
-  public function newToken(
-    $id,
-    $type,
-    $value,
-    $offset,
-    AASTTree $tree) {
+  public function newToken($id, $type, $value, $offset, AASTTree $tree) {
     return new XHPASTToken($id, $type, $value, $offset, $tree);
   }
 
@@ -35,7 +30,8 @@ final class XHPASTTree extends AASTTree {
     $tree = XHPASTTree::newFromData($string);
     $statements = $tree->getRootNode()->selectDescendantsOfType('n_STATEMENT');
     if (count($statements) != 1) {
-      throw new Exception('String does not parse into exactly one statement!');
+      throw new Exception(
+        pht('String does not parse into exactly one statement!'));
     }
     // Return the first one, trying to use reset() with iterators ends in tears.
     foreach ($statements as $statement) {
@@ -59,12 +55,20 @@ final class XHPASTTree extends AASTTree {
           throw new XHPASTSyntaxErrorException($matches[2], trim($stderr));
         }
       }
-      throw new Exception("XHPAST failed to parse file data {$err}: {$stderr}");
+      throw new Exception(
+        pht(
+          'XHPAST failed to parse file data %d: %s',
+          $err,
+          $stderr));
     }
 
-    $data = json_decode($stdout, true);
-    if (!is_array($data)) {
-      throw new Exception('XHPAST: failed to decode tree.');
+    $data = null;
+    try {
+      $data = phutil_json_decode($stdout);
+    } catch (PhutilJSONParserException $ex) {
+      throw new PhutilProxyException(
+        pht('XHPAST: failed to decode tree.'),
+        $ex);
     }
 
     return new XHPASTTree($data['tree'], $data['stream'], $php_source);

@@ -4,6 +4,7 @@ abstract class AASTToken {
 
   protected $id;
   protected $typeID;
+  protected $typeName;
   protected $value;
   protected $offset;
   protected $tree;
@@ -11,16 +12,16 @@ abstract class AASTToken {
   public function __construct($id, $type, $value, $offset, AASTTree $tree) {
     $this->id = $id;
     $this->typeID = $type;
-    $this->offset = $offset;
     $this->value = $value;
+    $this->offset = $offset;
     $this->tree = $tree;
   }
 
-  public function getTokenID() {
+  public final function getTokenID() {
     return $this->id;
   }
 
-  public function getTypeID() {
+  public final function getTypeID() {
     return $this->typeID;
   }
 
@@ -31,11 +32,11 @@ abstract class AASTToken {
     return $this->typeName;
   }
 
-  public function getValue() {
+  public final function getValue() {
     return $this->value;
   }
 
-  public function getOffset() {
+  public final function getOffset() {
     return $this->offset;
   }
 
