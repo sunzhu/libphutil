@@ -53,8 +53,8 @@ final class PhutilErrorHandler {
    */
   public static function initialize() {
     self::$initialized = true;
-    set_error_handler(array('PhutilErrorHandler', 'handleError'));
-    set_exception_handler(array('PhutilErrorHandler', 'handleException'));
+    set_error_handler(array(__CLASS__, 'handleError'));
+    set_exception_handler(array(__CLASS__, 'handleException'));
   }
 
   /**
@@ -407,7 +407,7 @@ final class PhutilErrorHandler {
         error_log($default_message);
         break;
       default:
-        error_log('Unknown event '.$event);
+        error_log(pht('Unknown event %s', $event));
         break;
     }
 

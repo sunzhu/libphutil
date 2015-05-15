@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * IMPORTANT: Do not call any libphutil functions in this class, including
+ * functions like @{function:id}, @{function:idx} and @{function:pht}. They
+ * may not have loaded yet.
+ */
 final class PhutilBootloader {
 
   private static $instance;
@@ -125,7 +130,6 @@ final class PhutilBootloader {
 
       $map = $this->libraryMaps[$name];
 
-      // NOTE: We can't use "idx()" here because it may not be loaded yet.
       $version = isset($map['__library_version__'])
         ? $map['__library_version__']
         : 1;

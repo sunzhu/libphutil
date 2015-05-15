@@ -37,9 +37,9 @@ final class AphrontMySQLiDatabaseConnection
 
   protected function connect() {
     if (!class_exists('mysqli', false)) {
-      throw new Exception(
-        'About to call new mysqli(), but the PHP MySQLi extension is not '.
-        'available!');
+      throw new Exception(pht(
+        'About to call new %s, but the PHP MySQLi extension is not available!',
+        'mysqli()'));
     }
 
     $user = $this->getConfiguration('user');
@@ -78,8 +78,13 @@ final class AphrontMySQLiDatabaseConnection
     if ($errno) {
       $error = $conn->connect_error;
       throw new AphrontConnectionQueryException(
-        "Attempt to connect to {$user}@{$host} failed with error ".
-        "#{$errno}: {$error}.", $errno);
+        pht(
+          'Attempt to connect to %s@%s failed with error #%d: %s.',
+          $user,
+          $host,
+          $errno,
+          $error),
+        $errno);
     }
 
     $ok = @$conn->set_charset('utf8mb4');
@@ -119,7 +124,8 @@ final class AphrontMySQLiDatabaseConnection
     }
 
     if ($conn->more_results()) {
-      throw new Exception('There are some results left in the result set.');
+      throw new Exception(
+        pht('There are some results left in the result set.'));
     }
 
     return $results;
@@ -153,7 +159,7 @@ final class AphrontMySQLiDatabaseConnection
   }
 
   public static function resolveAsyncQueries(array $conns, array $asyncs) {
-    assert_instances_of($conns, 'AphrontMySQLiDatabaseConnection');
+    assert_instances_of($conns, __CLASS__);
     assert_instances_of($asyncs, 'mysqli');
 
     $read = $error = $reject = array();
