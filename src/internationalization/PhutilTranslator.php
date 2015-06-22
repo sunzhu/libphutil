@@ -1,8 +1,8 @@
 <?php
 
-final class PhutilTranslator {
+final class PhutilTranslator extends Phobject {
 
-  static private $instance;
+  private static $instance;
 
   private $locale;
   private $localeCode;

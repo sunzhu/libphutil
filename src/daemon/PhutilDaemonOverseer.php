@@ -3,7 +3,7 @@
 /**
  * Oversees a daemon and restarts it if it fails.
  */
-final class PhutilDaemonOverseer {
+final class PhutilDaemonOverseer extends Phobject {
 
   private $argv;
   private $moreArgs;
@@ -439,7 +439,7 @@ EOHELP
       $results[(int)$pid] = array(
         'type' => $type,
         'command' => $command,
-        'pid' => (int) $pid,
+        'pid' => (int)$pid,
       );
     }
 

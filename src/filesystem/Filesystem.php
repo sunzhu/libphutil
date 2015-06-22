@@ -15,7 +15,7 @@
  * @task exec        Executables
  * @task assert      Assertions
  */
-final class Filesystem {
+final class Filesystem extends Phobject {
 
 
 /* -(  Files  )-------------------------------------------------------------- */
@@ -731,18 +731,23 @@ final class Filesystem {
 
 
   /**
-   * Return all directories between a path and "/". Iterating over them walks
-   * from the path to the root.
+   * Return all directories between a path and the specified root directory
+   * (defaulting to "/"). Iterating over them walks from the path to the root.
    *
-   * @param  string Path, absolute or relative to PWD.
-   * @return list   List of parent paths, including the provided path.
+   * @param  string        Path, absolute or relative to PWD.
+   * @param  string        The root directory.
+   * @return list<string>  List of parent paths, including the provided path.
    * @task   directory
    */
-  public static function walkToRoot($path) {
+  public static function walkToRoot($path, $root = '/') {
     $path = self::resolvePath($path);
+    $root = self::resolvePath($root);
 
     if (is_link($path)) {
       $path = realpath($path);
+    }
+    if (is_link($root)) {
+      $root = realpath($root);
     }
 
     $walk = array();
@@ -752,17 +757,25 @@ final class Filesystem {
         unset($parts[$k]);
       }
     }
-    do {
+
+    if (!self::isDescendant($path, $root)) {
+      return array();
+    }
+
+    while ($parts) {
       if (phutil_is_windows()) {
-        $walk[] = implode(DIRECTORY_SEPARATOR, $parts);
+        $next = implode(DIRECTORY_SEPARATOR, $parts);
       } else {
-        $walk[] = DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $parts);
+        $next = DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $parts);
       }
-      if (empty($parts)) {
+
+      $walk[] = $next;
+      if ($next == $root) {
         break;
       }
+
       array_pop($parts);
-    } while (true);
+    }
 
     return $walk;
   }
@@ -770,6 +783,20 @@ final class Filesystem {
 
 /* -(  Paths  )-------------------------------------------------------------- */
 
+
+  /**
+   * Checks if a path is specified as an absolute path.
+   *
+   * @param  string
+   * @return bool
+   */
+  public static function isAbsolutePath($path) {
+    if (phutil_is_windows()) {
+      return (bool)preg_match('/^[A-Za-z]+:/', $path);
+    } else {
+      return !strncmp($path, DIRECTORY_SEPARATOR, 1);
+    }
+  }
 
   /**
    * Canonicalize a path by resolving it relative to some directory (by
@@ -782,11 +809,7 @@ final class Filesystem {
    * @task   path
    */
   public static function resolvePath($path, $relative_to = null) {
-    if (phutil_is_windows()) {
-      $is_absolute = preg_match('/^[A-Za-z]+:/', $path);
-    } else {
-      $is_absolute = !strncmp($path, DIRECTORY_SEPARATOR, 1);
-    }
+    $is_absolute = self::isAbsolutePath($path);
 
     if (!$is_absolute) {
       if (!$relative_to) {
@@ -841,7 +864,6 @@ final class Filesystem {
    * @task   path
    */
   public static function isDescendant($path, $root) {
-
     try {
       self::assertExists($path);
       self::assertExists($root);
