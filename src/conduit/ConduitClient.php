@@ -155,12 +155,8 @@ final class ConduitClient extends Phobject {
         $this->password);
     }
 
-    $conduit_future = new ConduitFuture($core_future);
-    $conduit_future->setClient($this, $method);
-    $conduit_future->beginProfile($data);
-    $conduit_future->isReady();
-
-    return $conduit_future;
+    return id(new ConduitFuture($core_future))
+      ->setClient($this, $method);
   }
 
   public function setBasicAuthCredentials($username, $password) {
@@ -352,7 +348,7 @@ final class ConduitClient extends Phobject {
     $out = array();
 
     if (is_array($data)) {
-      if (!$data || (array_keys($data) == range(0, count($data) - 1))) {
+      if (phutil_is_natural_list($data)) {
         $out[] = 'A';
         $out[] = count($data);
         $out[] = ':';

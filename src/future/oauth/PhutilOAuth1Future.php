@@ -23,6 +23,7 @@ final class PhutilOAuth1Future extends FutureProxy {
   private $hasConstructedFuture;
   private $callbackURI;
   private $headers = array();
+  private $timeout;
 
   public function setCallbackURI($callback_uri) {
     $this->callbackURI = $callback_uri;
@@ -74,6 +75,15 @@ final class PhutilOAuth1Future extends FutureProxy {
     return $this;
   }
 
+  public function setTimeout($timeout) {
+    $this->timeout = $timeout;
+    return $this;
+  }
+
+  public function getTimeout() {
+    return $this->timeout;
+  }
+
   public function __construct($uri, $data = array()) {
     $this->uri = new PhutilURI((string)$uri);
     $this->data = $data;
@@ -94,7 +104,7 @@ final class PhutilOAuth1Future extends FutureProxy {
     }
 
     $params = $params
-            + $this->uri->getQueryParams()
+            + $this->uri->getQueryParamsAsMap()
             + $this->getOAuth1Headers();
 
     return $this->sign($params);
@@ -134,6 +144,11 @@ final class PhutilOAuth1Future extends FutureProxy {
         $future->addHeader($header[0], $header[1]);
       }
       $this->headers = array();
+
+      $timeout = $this->getTimeout();
+      if ($timeout !== null) {
+        $future->setTimeout($timeout);
+      }
 
       $this->hasConstructedFuture = true;
     }
@@ -183,7 +198,7 @@ final class PhutilOAuth1Future extends FutureProxy {
 
     $sign_uri = clone $this->uri;
     $sign_uri->setFragment('');
-    $sign_uri->setQueryParams(array());
+    $sign_uri->removeAllQueryParams();
 
     $sign_uri->setProtocol(phutil_utf8_strtolower($sign_uri->getProtocol()));
     $protocol = $sign_uri->getProtocol();
